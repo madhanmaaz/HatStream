@@ -1,0 +1,383 @@
+body {
+    background: var(--bg1);
+    color: #e5e5e5;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../src/bg.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    height: 100dvh;
+}
+
+#auth-form {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 1rem;
+    border-radius: 4px;
+    width: 330px;
+    text-align: center;
+    display: none;
+}
+
+#auth-form.active {
+    display: block;
+}
+
+#auth-form h2 {
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    color: #a78bfa;
+}
+
+#auth-form input {
+    background: rgba(70, 70, 70, 0.05);
+    backdrop-filter: blur(15px);
+    padding: .8rem;
+    margin: .5rem auto;
+    width: 100%;
+    font-size: 1.1rem;
+    border-radius: 4px;
+    color: #e5e5e5;
+}
+
+#auth-form button {
+    width: 100%;
+    border-radius: 4px;
+    background: #a78bfa;
+    padding: .5rem;
+    margin: .5rem auto;
+    font-size: 1.1rem;
+}
+
+#auth-form p {
+    margin-top: .5rem;
+}
+
+#auth-form a {
+    color: aqua;
+}
+
+/* main app */
+#root {
+    display: none;
+    width: 100%;
+    height: 100dvh;
+    padding: 1rem;
+}
+
+#root.active {
+    display: flex;
+}
+
+/* sidebar */
+#root .sidebar {
+    /* background: var(--bg2); */
+    width: 300px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+#root .sidebar .head {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: .5rem 1rem;
+}
+
+#root .sidebar .logo {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    justify-content: center;
+}
+
+#root .sidebar .logo img {
+    width: 50px;
+}
+
+#root .sidebar .logo h2 {
+    font-size: 1.8rem;
+}
+
+#root .sidebar #close-access,
+#root .sidebar #open-settings {
+    background: var(--primary);
+    padding: .3rem;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    width: 100%;
+    cursor: pointer;
+}
+
+#root .sidebar #open-settings {
+    background: aquamarine;
+}
+
+#root .sidebar .neck {
+    padding: .5rem;
+}
+
+#root .sidebar .neck #user-filter-input {
+    background: rgba(229, 229, 229, 0.05);
+    backdrop-filter: blur(15px);
+    padding: .5rem;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    width: 100%;
+    color: #e5e5e5;
+}
+
+#root .sidebar .body {
+    overflow-y: auto;
+    height: 100%;
+}
+
+#root .sidebar .body .user {
+    border-bottom: 1px solid rgba(229, 229, 229, 0.1);
+    padding: .8rem .5rem;
+    font-size: 1.1rem;
+    width: 100%;
+    color: #b1a7a6;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#root .sidebar .body .user p {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+#root .sidebar .body .user.active p {
+    color: var(--primary);
+}
+
+#root .sidebar .body .user span {
+    width: 15px;
+    height: 15px;
+    background: rgb(255, 66, 66);
+    border-radius: 3px;
+}
+
+#root .sidebar .body .user span.active {
+    background: #4cfc4c;
+}
+
+#close-sidebar {
+    color: #e5e5e5;
+    font-size: 1.1rem;
+    position: absolute;
+    top: .5rem;
+    left: .5rem;
+    cursor: pointer;
+    display: none;
+}
+
+#open-sidebar {
+    color: #e5e5e5;
+    font-size: 1.1rem;
+    display: none;
+}
+
+/* main */
+#root main {
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+
+#root main.active {
+    display: flex;
+}
+
+#root main .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .5rem;
+    overflow: hidden;
+    overflow-x: auto;
+    gap: .2rem;
+    text-wrap: nowrap;
+}
+
+#root main .header p span {
+    color: aqua;
+}
+
+/* message box */
+#root main .message-container {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+}
+
+#root main .message-container .line {
+    padding: .3rem .5rem;
+}
+
+#root main .message-container .line .head {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+}
+
+#root main .message-container .line .head .time {
+    color: #b1a7a6;
+}
+
+#root main .message-container .line .remote {
+    color: aquamarine;
+}
+
+#root main .message-container .line .head b {
+    font-size: 1.5rem;
+}
+
+#root main .message-container .line .head b.active {
+    color: #ff3600;
+}
+
+#root main .message-container .line .head small {
+    width: 100%;
+    background: rgba(229, 229, 229, 0.1);
+    height: 2px;
+}
+
+#root main .message-container .line .file {
+    cursor: pointer;
+    color: #a78bfa;
+}
+
+#root main .message-container .line pre {
+    text-wrap: auto;
+}
+
+/* chat form */
+#root main #chat-form {
+    padding: .5rem;
+    display: none;
+    align-items: center;
+    gap: .5rem;
+}
+
+#root main #chat-form.active {
+    display: flex;
+}
+
+#root main #chat-form input {
+    background: rgba(229, 229, 229, 0.05);
+    backdrop-filter: blur(15px);
+    padding: .5rem;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    width: 100%;
+    color: #e5e5e5;
+    resize: vertical;
+}
+
+#root main #chat-form button {
+    background: var(--primary);
+    padding: .3rem .7rem;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* settings-container */
+.settings-container {
+    width: 100%;
+    height: 100dvh;
+    padding: 1rem;
+    display: none;
+    flex-direction: column;
+}
+
+.settings-container.active {
+    display: flex;
+}
+
+.settings-container .content {
+    overflow-y: auto;
+    width: 100%;
+    height: 100%;
+}
+
+#close-settings {
+    color: #e5e5e5;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: .5rem;
+}
+
+.settings-container .content form {
+    padding: 1rem;
+}
+
+.settings-container .content form input,
+.settings-container .content form select {
+    background: rgba(229, 229, 229, 0.1);
+    backdrop-filter: blur(15px);
+    font-size: 1.1rem;
+    color: #e5e5e5;
+    padding: .5rem;
+    border-radius: 4px;
+    width: 280px;
+    margin: .5rem;
+}
+
+.settings-container .content form select option {
+    background: #000;
+}
+
+.settings-container .content form [type="submit"] {
+    background: var(--primary);
+    font-size: 1.1rem;
+    padding: .4rem;
+    border-radius: 4px;
+    width: 280px;
+    margin: .5rem;
+}
+
+
+
+
+
+
+
+
+/* media */
+@media(max-width: 1000px) {
+
+    #open-sidebar,
+    #close-sidebar {
+        display: block;
+        cursor: pointer;
+    }
+
+    .settings-container,
+    #root {
+        padding: 0 !important;
+    }
+
+    #root .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: none;
+    }
+
+    #root .sidebar.active {
+        display: flex;
+    }
+}

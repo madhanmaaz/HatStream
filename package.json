@@ -1,0 +1,23 @@
+{
+  "name": "hatstream",
+  "version": "0.0.1",
+  "description": "HatStream for Hackers - Secure Decentralized Chat App",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon --env-file=.env server.js"
+  },
+  "keywords": [],
+  "author": {
+    "name": "madhanmaaz",
+    "url": "https://madhanmaaz.netlify.app"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "octavia-db": "^2.0.2",
+    "socket.io": "^4.8.1"
+  }
+}
