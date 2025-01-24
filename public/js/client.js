@@ -398,7 +398,7 @@ const TEMPLATES = {
         div.className = "line"
         div.innerHTML = `<div class="head">
         <b class="${status == "OK" ? '' : "active"}">${remote ? "&gt;" : "&lt;"}</b>
-        <span class="time">[${time}]</span><span class="${remote ? 'remote' : ''}">${remote ? userAddress : location.origin}</span>
+        <span class="time">[${time}]</span><span class="${remote ? 'remote' : ''}">/${remote ? new URL(userAddress).host : location.host}</span>
         </div>
         <pre>${messageText}</pre>`
 

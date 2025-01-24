@@ -258,6 +258,7 @@ body {
 
 #root main .message-container .line pre {
     text-wrap: auto;
+    font-size: 1.2rem;
 }
 
 /* chat form */
