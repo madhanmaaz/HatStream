@@ -4,8 +4,15 @@
 
 <p align=center>
 <img src="./public/favicon.ico">
-  this is my server: https://madhanmaaz.glitch.me/
 </p>
+
+#### This is my server: https://madhanmaaz.glitch.me, let's chat
+
+### DEMO
+https://github.com/user-attachments/assets/6b784372-8429-469d-903d-2139d86c3fec
+
+![screen](./scr/1.jpg)
+![screen](./scr/2.jpg)
 
 ### 🚀  Features
 - **Server-to-Server Communication**: No central server; each user hosts their own chat server.
