@@ -4,6 +4,7 @@
 
 <p align=center>
 <img src="./public/favicon.ico">
+  this is my server: https://madhanmaaz.glitch.me/
 </p>
 
 ### 🚀  Features
