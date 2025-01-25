@@ -208,12 +208,14 @@ router.route("/ping").get((req, res) => {
         if (!thisUserAddress) {
             return res.sendStatus(400)
         }
+
+        const userAddress = helpers.escapeHTML(thisUserAddress)
         usersCollection.insert({
-            userAddress: thisUserAddress,
+            userAddress,
             token
         })
 
-        helpers.sendSecureSocket("ADD_USER", { userAddress: thisUserAddress })
+        helpers.sendSecureSocket("ADD_USER", { userAddress })
         res.sendStatus(200)
     } catch (error) {
         res.sendStatus(401)

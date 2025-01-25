@@ -186,6 +186,7 @@ authForm.addEventListener("submit", async function (e) {
         })
 
         APP_DATA.users.forEach(userAddress => {
+            TEMPLATES.addUserDataList(userAddress)
             TEMPLATES.user(userAddress)
         })
     } catch (error) {
@@ -343,6 +344,11 @@ uploadFile.addEventListener("click", () => {
 })
 
 const TEMPLATES = {
+    addUserDataList(userAddress) {
+        const option = document.createElement("option")
+        option.value = userAddress
+        usersDatalist.appendChild(option)
+    },
     user(userAddress) {
         const btn = document.createElement("button")
         btn.className = "user"
@@ -351,6 +357,11 @@ const TEMPLATES = {
         usersContainer.appendChild(btn)
 
         btn.addEventListener("click", async () => {
+            if (window.innerWidth < 1000) {
+                sidebarContainer.classList.remove("active")
+                mainContainer.classList.add("active")
+            }
+
             APP_DATA.currentUser = userAddress
             chatForm.classList.add("active")
 
@@ -396,9 +407,11 @@ const TEMPLATES = {
 
         const div = document.createElement("div")
         div.className = "line"
-        div.innerHTML = `<div class="head">
-        <b class="${status == "OK" ? '' : "active"}">${remote ? "&gt;" : "&lt;"}</b>
-        <span class="time">[${time}]</span><span class="${remote ? 'remote' : ''}">/${remote ? new URL(userAddress).host : location.host}</span>
+        div.innerHTML = `
+        <div class="head">
+            <b class="${status == "OK" ? '' : "active"}">${remote ? "&gt;" : "&lt;"}</b>
+            <span class="time">${time}</span>
+            <span class="${remote ? 'remote' : ''}">&#183; ${remote ? "REMOTE" : "YOU"}</span>
         </div>
         <pre>${messageText}</pre>`
 
@@ -455,6 +468,7 @@ async function handleSocketActions(options) {
         }
 
         case "ADD_USER": {
+            TEMPLATES.addUserDataList(options.userAddress)
             TEMPLATES.user(options.userAddress)
             break
         }

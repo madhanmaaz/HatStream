@@ -31,5 +31,17 @@ module.exports = {
         windowMs: 5 * 60 * 1000,
         max: 50,
         message: "Too many requests.",
-    })
+    }),
+    escapeHTML(str) {
+        if (str == null) return ""
+        const escapeChars = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+        }
+
+        return String(str).replace(/[&<>"']/g, char => escapeChars[char])
+    }
 }
