@@ -1,5 +1,6 @@
 const express = require("express")
 const axios = require("axios")
+const nodeURL = require("url")
 
 const { usersCollection, messageCollection } = require("../utils/database")
 const credentials = require("../utils/credentials")
@@ -12,20 +13,21 @@ router.post("/client", async (req, res) => {
     const body = req.body
 
     if (body.data == null) {
-        return res.sendStatus(400)
+        return res.json({ $error: "Invalid params." })
     }
 
     try {
         const decrypted = ENCRYPTOR.decrypt(body.data, credentials.PHRASE_2)
         if (decrypted.length === 0) {
-            return res.json({ error: "Phrase error." })
+            return res.json({ $error: "Incorrect phrase values." })
         }
 
         const clientData = await handleActions(decrypted) || {}
         const encrypted = ENCRYPTOR.encrypt(clientData, credentials.PHRASE_1)
         res.json({ data: encrypted })
     } catch (error) {
-        return res.json({ error: "Phrase error." })
+        console.log(error)
+        return res.json({ $error: "Incorrect phrase values." })
     }
 })
 
@@ -41,8 +43,8 @@ async function handleActions(options) {
         }
     }
 
-    if (!userAddress || !thisUserAddress) return {
-        error: "Invalid user data."
+    if (!userAddress || !thisUserAddress) {
+        return { $error: "Invalid user data." }
     }
 
     switch (action) {
@@ -50,17 +52,26 @@ async function handleActions(options) {
             try {
                 const user = usersCollection.find({ userAddress })
                 if (user && user.blocked) {
-                    return { error: "User blocked by you." }
+                    return { $error: "User blocked by you." }
                 }
 
-                const response = await axios.get(`${userAddress}/api/ping?thisUserAddress=${thisUserAddress}`)
+                const response = await axios.post(`${userAddress}/api/s2s`, {
+                    action: "USER_STATUS",
+                    thisUserAddress
+                }, {
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+
                 if (response.headers.get("chatapp") !== "HATSTREAM") {
-                    return { error: "This is not a valid Hatstream server." }
+                    return { $error: "This is not a valid Hatstream server." }
                 }
 
-                return { data: response.data }
+                return response.data
             } catch (error) {
-                return { error: `Failed to check status.  Maybe this is not a valid Hatstream server. ${error.message}` }
+                console.log(error)
+                return { $error: `Failed to check status.  Maybe this is not a valid Hatstream server. ${error.message}` }
             }
         }
 
@@ -68,11 +79,13 @@ async function handleActions(options) {
             try {
                 const user = usersCollection.find({ userAddress })
                 if (user) {
-                    return { error: "User already exists." }
+                    return { $error: "User already exists." }
                 }
 
                 const token = helpers.generateRansomString(32)
-                const response = await axios.post(`${userAddress}/api/ping?thisUserAddress=${thisUserAddress}`, {
+                const response = await axios.post(`${userAddress}/api/s2s`, {
+                    action: "ADD_USER",
+                    thisUserAddress,
                     token
                 }, {
                     headers: {
@@ -80,28 +93,30 @@ async function handleActions(options) {
                     }
                 })
 
-                if (response.data !== "OK") {
-                    return { error: "Failed to add user." }
+                if (response.data.hasOwnProperty("$error")) {
+                    return response.data
                 }
 
                 usersCollection.insert({ userAddress, token })
-                return { data: "User added successfully." }
+                return response.data
             } catch (error) {
-                return { error: `Failed to add user. Maybe this is not a valid Hatstream server. ${error.message}` }
+                console.log(error)
+                return { $error: `Failed to add user. Maybe this is not a valid Hatstream server. ${error.message}` }
             }
         }
 
         case "BLOCK_USER": {
             try {
                 const user = usersCollection.find({ userAddress })
-                if (!user) return { error: "User not found in your server." }
+                if (!user) return { $error: "User not found in your server." }
 
                 usersCollection.update({ userAddress }, { blocked: !user.blocked })
                 return {
                     data: !user.blocked ? "User blocked." : "User unblocked."
                 }
             } catch (error) {
-                return { error: `Failed to block user. ${error.message}` }
+                console.log(error)
+                return { $error: `Failed to block user. ${error.message}` }
             }
         }
 
@@ -110,18 +125,20 @@ async function handleActions(options) {
                 messageCollection.removeMany({ userAddress })
                 return { data: "Messages cleared." }
             } catch (error) {
-                return { error: `Failed to clear messages. ${error.message}` }
+                console.log(error)
+                return { $error: `Failed to clear messages. ${error.message}` }
             }
         }
 
         case "DOWNLOAD_MESSAGES": {
             try {
                 const messages = messageCollection.findMany({ userAddress })
-                if (!messages) return "User not found in your server."
+                if (!messages) return { $error: "User not found in your server." }
 
                 return { data: messages }
             } catch (error) {
-                return `Failed to download messages. ${error.message}`
+                console.log(error)
+                return { $error: `Failed to download messages. ${error.message}` }
             }
         }
 
@@ -137,15 +154,17 @@ async function handleActions(options) {
             try {
                 const user = usersCollection.find({ userAddress })
                 if (!user) {
-                    return "User not found in your server."
+                    return { $error: "User not found in your server." }
                 }
 
                 if (user.blocked) {
-                    return "Blocked by you."
+                    return { $error: "Blocked by you." }
                 }
 
-                const response = await axios.post(`${userAddress}/api/message?thisUserAddress=${thisUserAddress}`, {
-                    data: ENCRYPTOR.encrypt(messageObj, user.token)
+                const response = await axios.post(`${userAddress}/api/s2s`, {
+                    action: "RECEIVE_MESSAGE",
+                    data: ENCRYPTOR.encrypt(messageObj, user.token),
+                    thisUserAddress
                 }, {
                     headers: {
                         "Content-Type": "application/json"
@@ -154,7 +173,8 @@ async function handleActions(options) {
 
                 status = response.data
             } catch (error) {
-                return `Failed to send message. ${error.code || error.message}`
+                console.log(error)
+                return { $error: `Failed to send message. ${error.code || error.message}` }
             }
 
             try {
@@ -166,95 +186,123 @@ async function handleActions(options) {
 
                 return status
             } catch (error) {
-                return `Failed to send message. ${error.message}`
+                console.log(error)
+                return { $error: `Failed to send message. ${error.message}` }
             }
         }
 
         default:
-            return { error: "Invalid action." }
+            return { $error: "Invalid action." }
     }
 }
 
-router.route("/ping").get((req, res) => {
-    res.setHeader("chatapp", "HATSTREAM")
-
+router.route("/s2s").post(helpers.messageLimiter, (req, res) => {
     try {
-        const { thisUserAddress } = req.query
-        if (!thisUserAddress) {
-            return res.sendStatus(400)
-        }
+        res.setHeader("chatapp", "HATSTREAM")
+        res.json(handleS2S(req.body) || {})
+    } catch (error) {
+        console.log(error)
+        res.json({ $error: `Failed to communicate to remote server.` })
+    }
+})
 
-        const user = usersCollection.find({ userAddress: thisUserAddress })
-        let status = "Good to add user."
+function handleS2S(options) {
+    const { action, thisUserAddress } = options
 
-        if (user) {
-            if (user.blocked) {
-                status = "Blocked by remote user."
-            } else {
-                status = Object.keys(helpers.CLIENTS).length === 0
-                    ? "User offline" : "User online"
+    if (!thisUserAddress) {
+        return { $error: "from user address not found." }
+    }
+
+    switch (action) {
+        case "USER_STATUS": {
+            try {
+                const user = usersCollection.find({ userAddress: thisUserAddress })
+                let status = { data: "Good to add user." }
+
+                if (user) {
+                    if (user.blocked) {
+                        status = { $error: "Blocked by remote user." }
+                    } else {
+                        status = {
+                            data: Object.keys(helpers.CLIENTS).length === 0
+                                ? "User offline" : "User online"
+                        }
+                    }
+                }
+
+                return status
+            } catch (error) {
+                console.log(error)
+                return { $error: "Failed to retrieve status. Please try again later." }
             }
         }
 
-        res.send(status)
-    } catch (error) {
-        res.send("Failed to retrieve status. Please try again later.")
+        case "ADD_USER": {
+            let userAddress
+            try {
+                const parsedURL = new nodeURL.URL(thisUserAddress)
+                userAddress = parsedURL.origin
+            } catch (error) {
+                console.log(error)
+                return { $error: "Invalid URL." }
+            }
+
+            if (!userAddress) {
+                return { $error: "Invalid URL." }
+            }
+
+            if (!options.token) {
+                return { $error: "Invalid params." }
+            }
+
+            try {
+                usersCollection.insert({
+                    userAddress,
+                    token: options.token
+                })
+
+                helpers.sendSecureSocket("ADD_USER", { userAddress })
+                return { data: "User added successfully." }
+            } catch (error) {
+                console.log(error)
+                return { $error: "Faliled to add user." }
+            }
+        }
+
+        case "RECEIVE_MESSAGE": {
+            try {
+                const user = usersCollection.find({ userAddress: thisUserAddress })
+                if (!user) {
+                    return { $error: "User not found." }
+                }
+
+                if (user.blocked) {
+                    return { $error: "Blocked by remote user." }
+                }
+
+                const encrypted = options.data
+                const { type, time, data, filename } = ENCRYPTOR.decrypt(encrypted, user.token)
+                const messageObj = {
+                    userAddress: thisUserAddress,
+                    type,
+                    time,
+                    data,
+                    filename,
+                    remote: true
+                }
+
+                messageCollection.insert(messageObj)
+                helpers.sendSecureSocket("MESSAGE", messageObj)
+                return { data: "OK" }
+            } catch (error) {
+                console.log(error)
+                return { $error: `Failed to send message. ${error.message}` }
+            }
+        }
+
+        default:
+            return { $error: "Invalid action." }
     }
-}).post((req, res) => {
-    try {
-        const { thisUserAddress } = req.query
-        const { token } = req.body
-
-        if (!thisUserAddress) {
-            return res.sendStatus(400)
-        }
-
-        const userAddress = helpers.escapeHTML(thisUserAddress)
-        usersCollection.insert({
-            userAddress,
-            token
-        })
-
-        helpers.sendSecureSocket("ADD_USER", { userAddress })
-        res.sendStatus(200)
-    } catch (error) {
-        res.sendStatus(401)
-    }
-})
-
-router.route("/message").post(helpers.messageLimiter, (req, res) => {
-    try {
-        const { thisUserAddress } = req.query
-        if (!thisUserAddress) {
-            return res.sendStatus(400)
-        }
-
-        const user = usersCollection.find({ userAddress: thisUserAddress })
-        if (!user) {
-            return res.send("User not found.")
-        }
-
-        if (user.blocked) {
-            return res.send("Blocked by remote user.")
-        }
-
-        const encrypted = req.body.data
-        const { type, time, data, filename } = ENCRYPTOR.decrypt(encrypted, user.token)
-        const messageObj = {
-            userAddress: thisUserAddress,
-            type,
-            time,
-            data,
-            filename,
-            remote: true
-        }
-
-        messageCollection.insert(messageObj)
-        helpers.sendSecureSocket("MESSAGE", messageObj)
-        res.sendStatus(200)
-    } catch (error) {
-        res.send("Failed to send message.")
-    }
-})
+}
 
 module.exports = router

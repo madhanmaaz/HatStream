@@ -16,7 +16,6 @@ const sidebarContainer = document.querySelector(".sidebar")
 const mainContainer = rootApp.querySelector("main")
 const settingsContainer = document.querySelector(".settings-container")
 const userForm = document.querySelector("#user-form")
-const userFormMessageBox = userForm.querySelector(".message")
 const usersDatalist = document.querySelector("#users-datalist")
 const usersContainer = document.querySelector("#users-container")
 const messageContainer = document.querySelector(".message-container")
@@ -97,7 +96,6 @@ function getCurrentTime() {
 async function sendSecureRequest(jsonData) {
     try {
         const encrypted = ENCRYPTOR.encrypt(JSON.stringify(jsonData), STATE.PHRASE_2)
-
         const response = await axios.post("/api/client", {
             data: encrypted
         }, {
@@ -107,22 +105,28 @@ async function sendSecureRequest(jsonData) {
         })
 
         if (response.status !== 200) {
-            return { error: "Request failed: Access Denied." }
+            return alert("Request failed: Access Denied.")
         }
 
         const responseData = response.data
-        if (responseData.hasOwnProperty("error")) {
-            return responseData
+        if (responseData.hasOwnProperty("$error")) {
+            return alert(responseData.$error)
         }
 
         const decrypted = ENCRYPTOR.decrypt(responseData.data, STATE.PHRASE_1)
-        if (decrypted.length == 0) {
-            return { error: "Phrase error." }
+        if (!decrypted) {
+            return alert("Incorrect phrase values.")
         }
 
-        return JSON.parse(decrypted)
+        const decryptedData = JSON.parse(decrypted)
+        if (decryptedData.hasOwnProperty("$error")) {
+            return alert(decryptedData.$error)
+        }
+
+        return decryptedData
     } catch (error) {
-        return { error: `Request failed: ${error.message}` }
+        console.log(error)
+        return alert(`Request failed: ${error.message}`)
     }
 }
 
@@ -143,11 +147,7 @@ authForm.addEventListener("submit", async function (e) {
             phrase1
         })
 
-        if (response.hasOwnProperty("error")) {
-            STATE.reset()
-            return alert(response.error)
-        }
-
+        if (!response) return
         if (response.data !== "OK") {
             return alert("Access denied.")
         }
@@ -161,8 +161,8 @@ authForm.addEventListener("submit", async function (e) {
         })
 
         socket.on("data", async response => {
-            if (response.hasOwnProperty("error")) {
-                return alert(response.error)
+            if (response.hasOwnProperty("$error")) {
+                return alert(response.$error)
             }
 
             try {
@@ -176,11 +176,7 @@ authForm.addEventListener("submit", async function (e) {
         })
 
         const fetchUsers = await sendSecureRequest({ action: "GET_USERS" })
-        if (fetchUsers.hasOwnProperty("error")) {
-            STATE.reset()
-            return alert(fetchUsers.error)
-        }
-
+        if (!fetchUsers) return
         APP_DATA.users = fetchUsers.data.map(userObj => {
             return userObj.userAddress
         })
@@ -211,6 +207,7 @@ userForm.addEventListener("submit", async (e) => {
 
         userAddress = parsedAddress.origin
     } catch (error) {
+        console.log(error)
         return alert("Error: Invalid URL")
     }
 
@@ -220,11 +217,9 @@ userForm.addEventListener("submit", async (e) => {
         thisUserAddress: location.origin,
     })
 
-    if (action == "ADD_USER" && response.data) {
-        TEMPLATES.user(userAddress)
-    }
+    if (!response) return
 
-    if (action == "DOWNLOAD_MESSAGES" && response.data) {
+    if (action == "DOWNLOAD_MESSAGES") {
         const jsonData = JSON.stringify(response.data, null, 2)
         const blob = new Blob([jsonData], { type: "application/json" })
         const url = URL.createObjectURL(blob)
@@ -240,14 +235,15 @@ userForm.addEventListener("submit", async (e) => {
         return
     }
 
-    if (action == "CLEAR_MESSAGES") {
+    alert(response.data)
+    if (action == "ADD_USER") {
+        TEMPLATES.user(userAddress)
+    } else if (action == "CLEAR_MESSAGES") {
         APP_DATA.messages[userAddress] = []
         if (APP_DATA.currentUser == userAddress) {
             messageContainer.innerHTML = ""
         }
     }
-
-    userFormMessageBox.innerHTML = `[response] > ${response.error || response.data}`
 })
 
 // chatForm
@@ -256,7 +252,11 @@ chatForm.addEventListener("submit", async (e) => {
     if (!APP_DATA.currentUser) return
 
     try {
+        e.submitter.setAttribute("disabled", true)
+        e.target.text.setAttribute("readonly", true)
+
         const text = escapeHTML(e.target.text.value)
+        if (!text) return
         const time = getCurrentTime()
         const type = "text"
 
@@ -269,17 +269,22 @@ chatForm.addEventListener("submit", async (e) => {
             thisUserAddress: location.origin
         })
 
+        e.submitter.removeAttribute("disabled")
+        e.target.text.removeAttribute("readonly")
+
+        if (!response) return
         TEMPLATES.messageLine({
             type,
             time,
             data: text,
             userAddress: APP_DATA.currentUser,
-            status: response
+            status: response.data
         })
 
         e.target.text.value = ""
         messageContainer.scrollTop = messageContainer.scrollHeight
     } catch (error) {
+        console.log(error)
         alert(`Failed to send message. ${error.message}`)
     }
 })
@@ -323,13 +328,14 @@ uploadFile.addEventListener("click", () => {
                 thisUserAddress: location.origin
             })
 
+            if (!response) return
             TEMPLATES.messageLine({
                 type,
                 time,
                 data,
                 filename,
                 userAddress: APP_DATA.currentUser,
-                status: response
+                status: response.data
             })
 
             messageContainer.scrollTop = messageContainer.scrollHeight

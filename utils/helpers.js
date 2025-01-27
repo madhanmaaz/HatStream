@@ -12,7 +12,7 @@ module.exports = {
             })
         } catch (error) {
             IO.emit("data", {
-                error: `[${action}] ${error.message}`
+                $error: `[${action}] ${error.message}`
             })
         }
     },
