@@ -2,10 +2,11 @@ const express = require("express")
 const axios = require("axios")
 const nodeURL = require("url")
 
-const { usersCollection, messageCollection } = require("../utils/database")
+const { usersCollection, messageCollection, rsaCollection } = require("../utils/database")
 const credentials = require("../utils/credentials")
 const ENCRYPTOR = require("../utils/encryptor")
 const helpers = require("../utils/helpers")
+const RSA = require("../utils/rsa")
 
 const router = express.Router()
 
@@ -82,11 +83,10 @@ async function handleActions(options) {
                     return { $error: "User already exists." }
                 }
 
-                const token = helpers.generateRansomString(32)
                 const response = await axios.post(`${userAddress}/api/s2s`, {
                     action: "ADD_USER",
                     thisUserAddress,
-                    token
+                    pubKey: rsaCollection.find({ key: "RSA" }).pubKey // our key
                 }, {
                     headers: {
                         "Content-Type": "application/json"
@@ -97,7 +97,12 @@ async function handleActions(options) {
                     return response.data
                 }
 
-                usersCollection.insert({ userAddress, token })
+                usersCollection.insert({
+                    userAddress,
+                    pubKey: response.data.pubKey // remote key
+                })
+
+                delete response.data.pubKey
                 return response.data
             } catch (error) {
                 console.log(error)
@@ -164,7 +169,7 @@ async function handleActions(options) {
 
                 const response = await axios.post(`${userAddress}/api/s2s`, {
                     action: "RECEIVE_MESSAGE",
-                    data: ENCRYPTOR.encrypt(messageObj, user.token),
+                    data: RSA.encrypt(messageObj, user.pubKey /* remote key */),
                     thisUserAddress
                 }, {
                     headers: {
@@ -251,18 +256,21 @@ function handleS2S(options) {
                 return { $error: "Invalid URL." }
             }
 
-            if (!options.token) {
+            if (!options.pubKey) {
                 return { $error: "Invalid params." }
             }
 
             try {
                 usersCollection.insert({
                     userAddress,
-                    token: options.token
+                    pubKey: options.pubKey // remote key
                 })
 
                 helpers.sendSecureSocket("ADD_USER", { userAddress })
-                return { data: "User added successfully." }
+                return {
+                    data: "User added successfully.",
+                    pubKey: rsaCollection.find({ key: "RSA" }).pubKey // our key
+                }
             } catch (error) {
                 console.log(error)
                 return { $error: "Faliled to add user." }
@@ -280,8 +288,11 @@ function handleS2S(options) {
                     return { $error: "Blocked by remote user." }
                 }
 
-                const encrypted = options.data
-                const { type, time, data, filename, ftype } = ENCRYPTOR.decrypt(encrypted, user.token)
+                const { type, time, data, filename, ftype } = RSA.decrypt(
+                    options.data,
+                    rsaCollection.find({ key: "RSA" }).priKey /* our key */
+                )
+
                 const messageObj = {
                     userAddress: thisUserAddress,
                     type,
