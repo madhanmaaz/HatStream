@@ -148,7 +148,8 @@ async function handleActions(options) {
                 type: options.type,
                 time: options.time,
                 data: options.data,
-                filename: options.filename
+                filename: options.filename,
+                ftype: options.ftype
             }
 
             try {
@@ -180,8 +181,7 @@ async function handleActions(options) {
             try {
                 messageCollection.insert({
                     userAddress,
-                    ...messageObj,
-                    status
+                    ...messageObj
                 })
 
                 return status
@@ -281,13 +281,14 @@ function handleS2S(options) {
                 }
 
                 const encrypted = options.data
-                const { type, time, data, filename } = ENCRYPTOR.decrypt(encrypted, user.token)
+                const { type, time, data, filename, ftype } = ENCRYPTOR.decrypt(encrypted, user.token)
                 const messageObj = {
                     userAddress: thisUserAddress,
                     type,
                     time,
                     data,
                     filename,
+                    ftype,
                     remote: true
                 }
 

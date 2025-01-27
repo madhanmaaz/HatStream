@@ -211,12 +211,14 @@ userForm.addEventListener("submit", async (e) => {
         return alert("Error: Invalid URL")
     }
 
+    e.submitter.setAttribute("disabled", true)
     const response = await sendSecureRequest({
         action,
         userAddress,
         thisUserAddress: location.origin,
     })
 
+    e.submitter.removeAttribute("disabled")
     if (!response) return
 
     if (action == "DOWNLOAD_MESSAGES") {
@@ -277,8 +279,7 @@ chatForm.addEventListener("submit", async (e) => {
             type,
             time,
             data: text,
-            userAddress: APP_DATA.currentUser,
-            status: response.data
+            userAddress: APP_DATA.currentUser
         })
 
         e.target.text.value = ""
@@ -324,6 +325,7 @@ uploadFile.addEventListener("click", () => {
                 time,
                 data,
                 filename,
+                ftype: file.type,
                 userAddress: APP_DATA.currentUser,
                 thisUserAddress: location.origin
             })
@@ -334,8 +336,8 @@ uploadFile.addEventListener("click", () => {
                 time,
                 data,
                 filename,
-                userAddress: APP_DATA.currentUser,
-                status: response.data
+                ftype: file.type,
+                userAddress: APP_DATA.currentUser
             })
 
             messageContainer.scrollTop = messageContainer.scrollHeight
@@ -393,29 +395,22 @@ const TEMPLATES = {
             }
 
             for (const messageObj of APP_DATA.messages[userAddress]) {
-                messageObj.status = "OK"
                 TEMPLATES.messageLine(messageObj)
             }
 
             messageContainer.scrollTop = messageContainer.scrollHeight
         })
     },
-    messageLine({ type, time, data, userAddress, status, remote, filename }) {
-        let messageText = type == "text"
+    messageLine({ type, time, data, userAddress, ftype, remote, filename }) {
+        const messageText = type == "text"
             ? data
-            : `<a title="Click to download" class="file">[FILE]: ${filename}</a>`
-
-        if (status != "OK") {
-            messageText = type == "text"
-                ? `[${status}] ${data}`
-                : `<a class="file">[${status}] FILE: ${filename}</a>`
-        }
+            : createUiForFile(filename, ftype, data)
 
         const div = document.createElement("div")
         div.className = "line"
         div.innerHTML = `
         <div class="head">
-            <b class="${status == "OK" ? '' : "active"}">${remote ? "&gt;" : "&lt;"}</b>
+            <b>${remote ? "&gt;" : "&lt;"}</b>
             <span class="time">${time}</span>
             <span class="${remote ? 'remote' : ''}">&#183; ${remote ? "REMOTE" : "YOU"}</span>
         </div>
@@ -445,7 +440,6 @@ messageContainer.addEventListener("scroll", () => {
 async function handleSocketActions(options) {
     switch (options.action) {
         case "MESSAGE": {
-            options.status = "OK"
             if (APP_DATA.messages[options.userAddress] == null) {
                 const response = await sendSecureRequest({
                     action: "DOWNLOAD_MESSAGES",
@@ -479,4 +473,19 @@ async function handleSocketActions(options) {
             break
         }
     }
+}
+
+function createUiForFile(filename, type, data) {
+    if (!type || !data) return ""
+
+    let html = `<button title="Click to download" class="file">DOWNLOAD FILE: ${filename}</button>`
+    if (type.startsWith("image")) {
+        html += `<img src="${data}" alt="Image">`
+    } else if (type.startsWith("audio")) {
+        html += `<audio controls><source src="${data}" type="${type}">Your browser does not support the audio element.</audio>`
+    } else if (type.startsWith("video")) {
+        html += `<video controls><source src="${data}" type="${type}">Your browser does not support the video tag.</video>`
+    }
+
+    return html
 }

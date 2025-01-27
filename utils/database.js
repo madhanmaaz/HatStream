@@ -4,6 +4,7 @@ const path = require("path")
 
 const db = new OctaviaDB({
     database: path.join(process.__dirname, "ssd"),
+    database: "ssd",
     password: credentials.PHRASE_1
 })
 

@@ -1,7 +1,7 @@
 body {
     background: var(--bg1);
     color: #e5e5e5;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url(../src/bg.jpg);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../src/bg.jpg);
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -255,11 +255,22 @@ body {
 #root main .message-container .line .file {
     cursor: pointer;
     color: #a78bfa;
+    display: block;
+    font-size: 1.1rem;
+    padding: .3rem;
 }
 
 #root main .message-container .line pre {
     text-wrap: auto;
     font-size: 1.2rem;
+}
+
+#root main .message-container .line pre img,
+#root main .message-container .line pre video {
+    width: 100%;
+    max-width: 500px;
+    height: 100%;
+    object-fit: contain;
 }
 
 /* chat form */
