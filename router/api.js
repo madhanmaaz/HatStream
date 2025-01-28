@@ -2,7 +2,7 @@ const express = require("express")
 const axios = require("axios")
 const nodeURL = require("url")
 
-const { usersCollection, messageCollection, rsaCollection } = require("../utils/database")
+const { usersCollection, messageCollection } = require("../utils/database")
 const credentials = require("../utils/credentials")
 const ENCRYPTOR = require("../utils/encryptor")
 const helpers = require("../utils/helpers")
@@ -86,7 +86,7 @@ async function handleActions(options) {
                 const response = await axios.post(`${userAddress}/api/s2s`, {
                     action: "ADD_USER",
                     thisUserAddress,
-                    pubKey: rsaCollection.find({ key: "RSA" }).pubKey // our key
+                    pubKey: RSA.KEYS.pubKey // our key
                 }, {
                     headers: {
                         "Content-Type": "application/json"
@@ -269,7 +269,7 @@ function handleS2S(options) {
                 helpers.sendSecureSocket("ADD_USER", { userAddress })
                 return {
                     data: "User added successfully.",
-                    pubKey: rsaCollection.find({ key: "RSA" }).pubKey // our key
+                    pubKey: RSA.KEYS.pubKey // our key
                 }
             } catch (error) {
                 console.log(error)
@@ -290,7 +290,7 @@ function handleS2S(options) {
 
                 const { type, time, data, filename, ftype } = RSA.decrypt(
                     options.data,
-                    rsaCollection.find({ key: "RSA" }).priKey /* our key */
+                    RSA.KEYS.priKey /* our key */
                 )
 
                 const messageObj = {
