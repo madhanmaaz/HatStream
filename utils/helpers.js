@@ -28,8 +28,8 @@ module.exports = {
         return ransomString
     },
     messageLimiter: rateLimit({
-        windowMs: 5 * 60 * 1000,
-        max: 50,
+        windowMs: 15 * 60 * 1000,
+        max: 100,
         message: "Too many requests.",
     }),
     escapeHTML(str) {

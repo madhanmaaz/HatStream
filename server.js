@@ -11,9 +11,10 @@ const app = express()
 const server = http.createServer(app)
 const io = new socketIO.Server(server)
 
+app.set('trust proxy', 1)
 app.use(express.static(path.join(__dirname, "public")))
 app.use(express.urlencoded({ extended: false }))
-app.use(express.json({ limit: "15mb" }))
+app.use(express.json({ limit: "20mb" }))
 
 global.IO = io
 
