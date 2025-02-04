@@ -9,7 +9,7 @@
 #### This is my server: https://madhanmaaz.glitch.me, let's chat
 
 ### DEMO
-https://github.com/user-attachments/assets/6b784372-8429-469d-903d-2139d86c3fec
+https://github.com/user-attachments/assets/7397523d-6908-42d7-9513-3e103d3410ba
 
 ![screen](./scr/1.jpg)
 ![screen](./scr/2.jpg)
