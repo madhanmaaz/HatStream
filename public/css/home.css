@@ -1,142 +1,86 @@
 body {
-    background: var(--bg1);
-    color: #e5e5e5;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(../src/bg.jpg);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center;
+    width: 100%;
     height: 100dvh;
+    display: flex;
+    background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+        url(../src/bg.jpg);
+    background-position: center;
+    background-size: cover;
+    padding: 1rem;
+    gap: .5rem;
 }
 
+/* auth form */
 #auth-form {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 1rem;
-    border-radius: 4px;
-    width: 330px;
+    flex: 3;
     text-align: center;
     display: none;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
 
 #auth-form.active {
-    display: block;
+    display: flex;
+}
+
+#auth-form .content {
+    width: 260px;
 }
 
 #auth-form h2 {
     text-transform: uppercase;
-    margin-bottom: 1rem;
-    color: #a78bfa;
+    color: var(--primary);
 }
 
 #auth-form input {
-    background: rgba(70, 70, 70, 0.05);
-    backdrop-filter: blur(15px);
-    padding: .8rem;
     margin: .5rem auto;
     width: 100%;
-    font-size: 1.1rem;
-    border-radius: 4px;
-    color: #e5e5e5;
 }
 
 #auth-form button {
-    width: 100%;
-    border-radius: 4px;
-    background: #a78bfa;
-    padding: .5rem;
     margin: .5rem auto;
-    font-size: 1.1rem;
-}
-
-#auth-form p {
-    margin-top: .5rem;
-}
-
-#auth-form a {
-    color: aqua;
-}
-
-/* main app */
-#root {
-    display: none;
     width: 100%;
-    height: 100dvh;
-    padding: 1rem;
 }
 
-#root.active {
+/* container */
+.container {
+    flex: 3;
+    height: 100%;
+    position: relative;
+    display: none;
+    gap: .5rem;
+}
+
+.container.active {
     display: flex;
+}
+
+/* user-form */
+#user-form h4 {
+    margin: .5rem auto;
+}
+
+#user-form select,
+#user-form button,
+#user-form input {
+    width: 100%;
+    margin: .3rem auto;
 }
 
 /* sidebar */
-#root .sidebar {
-    /* background: var(--bg2); */
-    width: 300px;
-    height: 100%;
+.sidebar {
+    width: 250px;
     display: flex;
     flex-direction: column;
-    position: relative;
-    flex: 1;
 }
 
-#root .sidebar .head {
-    display: flex;
-    flex-direction: column;
-    gap: .5rem;
-    padding: .5rem 1rem;
-}
-
-#root .sidebar .logo {
-    display: flex;
-    align-items: center;
-    gap: .5rem;
-    justify-content: center;
-}
-
-#root .sidebar .logo img {
-    width: 50px;
-}
-
-#root .sidebar .logo h2 {
-    font-size: 1.8rem;
-}
-
-#root .sidebar #close-access,
-#root .sidebar #open-settings {
-    background: var(--primary);
-    padding: .3rem;
-    font-size: 1.1rem;
-    border-radius: 5px;
-    width: 100%;
-    cursor: pointer;
-}
-
-#root .sidebar #open-settings {
-    background: aquamarine;
-}
-
-#root .sidebar .neck {
-    padding: .5rem;
-}
-
-#root .sidebar .neck #user-filter-input {
-    background: rgba(229, 229, 229, 0.05);
-    backdrop-filter: blur(15px);
-    padding: .5rem;
-    font-size: 1.1rem;
-    border-radius: 5px;
-    width: 100%;
-    color: #e5e5e5;
-}
-
-#root .sidebar .body {
-    overflow-y: auto;
+.sidebar .users {
     height: 100%;
+    overflow-y: scroll;
 }
 
-#root .sidebar .body .user {
+.sidebar .user {
     border-bottom: 1px solid rgba(229, 229, 229, 0.1);
     padding: .8rem .5rem;
     font-size: 1.1rem;
@@ -148,59 +92,32 @@ body {
     justify-content: space-between;
 }
 
-#root .sidebar .body .user p {
+.sidebar .user p {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
 }
 
-#root .sidebar .body .user.active p {
+.sidebar .user.active p {
     color: var(--primary);
 }
 
-#root .sidebar .body .user span {
-    width: 15px;
-    height: 15px;
-    background: rgb(255, 66, 66);
-    border-radius: 3px;
-}
-
-#root .sidebar .body .user span.active {
-    background: #4cfc4c;
-}
-
 #close-sidebar {
-    color: #e5e5e5;
-    font-size: 1.1rem;
-    position: absolute;
-    top: .5rem;
-    left: .5rem;
-    cursor: pointer;
     display: none;
 }
 
-#open-sidebar {
-    color: #e5e5e5;
-    font-size: 1.1rem;
-    display: none;
-}
-
-/* main */
-#root main {
-    display: none;
+/* message container */
+.message-container {
+    display: flex;
     flex-direction: column;
-    height: 100%;
     width: 100%;
+    height: 100%;
 }
 
-#root main.active {
+.message-container .header {
     display: flex;
-}
-
-#root main .header {
-    display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     padding: .5rem;
     overflow: hidden;
     overflow-x: auto;
@@ -208,189 +125,214 @@ body {
     text-wrap: nowrap;
 }
 
-#root main .header p span {
-    color: aqua;
+.message-container .header button {
+    display: none;
 }
 
-/* message box */
-#root main .message-container {
+.message-content {
     height: 100%;
-    width: 100%;
-    overflow-y: auto;
+    overflow-y: scroll;
 }
 
-#root main .message-container .line {
-    padding: .3rem .5rem;
+.message-content .line {
+    padding: .5rem;
 }
 
-#root main .message-container .line .head {
+.message-content .line .head {
     display: flex;
     align-items: center;
     gap: .5rem;
+}
+
+.message-content .line .head b {
     width: 100%;
-}
-
-#root main .message-container .line .head .time {
-    color: #b1a7a6;
-}
-
-#root main .message-container .line .remote {
-    color: aquamarine;
-}
-
-#root main .message-container .line .head b {
-    font-size: 1.5rem;
-}
-
-#root main .message-container .line .head b.active {
-    color: #ff3600;
-}
-
-#root main .message-container .line .head small {
-    width: 100%;
-    background: rgba(229, 229, 229, 0.1);
     height: 2px;
+    background: var(--secondary);
 }
 
-#root main .message-container .line .file {
-    cursor: pointer;
-    color: #a78bfa;
-    display: block;
-    font-size: 1.1rem;
-    padding: .3rem;
+.message-content .line .indicator {
+    font-size: 1.4em;
+    margin-right: 5px;
+    font-weight: bold;
+    color: #B0E0E6;
 }
 
-#root main .message-container .line pre {
-    text-wrap: auto;
-    font-size: 1.2rem;
+.message-content .line .username {
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #B0E0E6;
 }
 
-#root main .message-container .line pre img,
-#root main .message-container .line pre video {
+.message-content .line .time {
+    font-size: 0.85em;
+    color: #9E9E9E;
+}
+
+.message-content .line .message-text {
+    font-size: 1.1em;
+    line-height: 1.5;
+    padding-left: 1.5rem;
+    color: var(--primary);
+    overflow-x: auto;
+}
+
+.message-content .remote .message-text {
+    color: var(--typing);
+}
+
+.message-content .line img,
+.message-content .line video {
     width: 100%;
     max-width: 500px;
     height: 100%;
     object-fit: contain;
+    border: var(--border);
+    border-radius: 4px;
 }
 
-/* chat form */
-#root main #chat-form {
-    padding: .5rem;
+.message-content .line img {
+    max-width: 300px;
+}
+
+.message-content .line .file {
+    cursor: pointer;
+    color: #B0E0E6;
+    display: block;
+    font-size: 1.1rem;
+    padding-bottom: 1rem;
+}
+
+/* chat-form */
+#chat-form {
+    width: 100%;
     display: none;
     align-items: center;
-    gap: .5rem;
+    gap: .4rem;
 }
 
-#root main #chat-form.active {
+#chat-form.active {
     display: flex;
 }
 
-#root main #chat-form input {
-    background: rgba(229, 229, 229, 0.05);
-    backdrop-filter: blur(15px);
-    padding: .5rem;
-    font-size: 1.1rem;
-    border-radius: 5px;
+#chat-form input,
+#chat-form textarea {
     width: 100%;
-    color: #e5e5e5;
-    resize: vertical;
+    resize: none;
 }
 
-#root main #chat-form button {
-    background: var(--primary);
-    padding: .3rem .7rem;
-    font-size: 1.1rem;
-    border-radius: 5px;
-    cursor: pointer;
+#chat-form button {
+    font-family: monospace, sans-serif !important;
 }
 
-/* settings-container */
-.settings-container {
-    width: 100%;
-    height: 100dvh;
-    padding: 1rem;
-    display: none;
+
+/* logger */
+.logger {
+    width: 370px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: .5rem 1rem;
+    border: var(--border);
+    border-radius: 4px;
+    display: flex;
     flex-direction: column;
 }
 
-.settings-container.active {
+.logger .logo {
     display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
 }
 
-.settings-container .content {
-    overflow-y: auto;
-    width: 100%;
+.logger .logo img {
+    height: 50px;
+}
+
+.logger .content {
     height: 100%;
+    overflow-y: scroll;
 }
 
-#close-settings {
-    color: #e5e5e5;
+.logger .content p {
     font-size: 1.1rem;
-    cursor: pointer;
-    padding: .5rem;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    border-bottom: var(--border);
+    padding: .3rem 0;
 }
 
-.settings-container .content form {
-    padding: 1rem;
+/* typing */
+.char {
+    animation: typing 500ms linear;
+    color: var(--typing);
 }
 
-.settings-container .content form input,
-.settings-container .content form select {
-    background: rgba(229, 229, 229, 0.1);
-    backdrop-filter: blur(15px);
-    font-size: 1.1rem;
-    color: #e5e5e5;
-    padding: .5rem;
-    border-radius: 4px;
-    width: 280px;
-    margin: .5rem;
+@keyframes typing {
+    0% {
+        background: #FFF;
+        color: #FFF;
+    }
+
+    5% {
+        background: transparent;
+        color: #FFF;
+    }
+
+    100% {
+        background: transparent;
+        color: var(--typing);
+    }
+
 }
-
-.settings-container .content form select option {
-    background: #000;
-}
-
-.settings-container .content form [type="submit"] {
-    background: var(--primary);
-    font-size: 1.1rem;
-    padding: .4rem;
-    border-radius: 4px;
-    width: 280px;
-    margin: .5rem;
-}
-
-
-
-
-
 
 
 
 /* media */
 @media(max-width: 1000px) {
-
-    #open-sidebar,
-    #close-sidebar {
-        display: block;
-        cursor: pointer;
+    html {
+        font-size: 90%;
     }
 
-    .settings-container,
-    #root {
-        padding: 0 !important;
+    body {
+        flex-direction: column-reverse;
+        padding: .2rem;
+        gap: 0rem;
     }
 
-    #root .sidebar {
-        position: fixed;
+    .container {
+        height: 70%;
+    }
+
+    .logger {
+        width: 100%;
+        height: 30%;
+    }
+
+    .sidebar {
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        z-index: 1000;
+        background: #000;
+        z-index: 100;
         display: none;
+        padding: .5rem;
     }
 
-    #root .sidebar.active {
+    #user-form {
+        padding: .5rem;
+    }
+
+    .sidebar.active {
         display: flex;
+    }
+
+    #close-sidebar {
+        display: inline-block;
+        width: fit-content;
+    }
+
+    .message-container .header button {
+        display: block;
     }
 }

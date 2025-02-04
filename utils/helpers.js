@@ -1,6 +1,7 @@
-const ENCRYPTOR = require("./encryptor")
+const AES = require("./aes")
 const credentials = require("./credentials")
 const rateLimit = require("express-rate-limit")
+
 
 module.exports = {
     CLIENTS: {},
@@ -8,11 +9,11 @@ module.exports = {
         try {
             obj.action = action
             IO.emit("data", {
-                data: ENCRYPTOR.encrypt(obj, credentials.PHRASE_1)
+                data: AES.encrypt(obj, credentials.PHRASE_1)
             })
         } catch (error) {
             IO.emit("data", {
-                $error: `[${action}] ${error.message}`
+                error: `[${action}] ${error.message}`
             })
         }
     },

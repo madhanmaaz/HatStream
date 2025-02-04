@@ -4,75 +4,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HatStream</title>
-    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/home.css">
+    <title>HatSteam - Chat</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/home.css">
 </head>
 
 <body>
+    <form id="auth-form" class="active" autocomplete="off">
+        <div class="content">
+            <h2>ACCESS PHRASE</h2>
+            <input class="input" type="password" name="p1" required placeholder="Phrase1" autocomplete="off">
+            <input class="input" type="password" name="p2" required placeholder="Phrase2" autocomplete="off">
+            <button class="button" type="submit">Submit</button>
 
-    <!-- auth form -->
-    <form id="auth-form" autocomplete="off" class="active">
-        <h2>ACCESS Phrase</h2>
-        <input type="password" name="p1" required placeholder="Phrase1" autocomplete="off">
-        <input type="password" name="p2" required placeholder="Phrase2" autocomplete="off">
-        <button type="submit">Submit</button>
-
-        <p>Created by <a target="_blank" href="https://github.com/madhanmaaz">madhanmaaz</a></p>
+            <p>Created by <a target="_blank" href="https://github.com/madhanmaaz">madhanmaaz</a></p>
+        </div>
     </form>
 
-    <!-- app -->
-    <section id="root">
-        <aside class="sidebar">
-            <button id="close-sidebar" title="open sidebar">[ X ]</button>
-
-            <div class="head">
-                <div class="logo">
-                    <img src="/src/icon.png" alt="logo">
-                    <h2>Stream</h2>
-                </div>
-
-                <button id="close-access">Close Access</button>
-                <button id="open-settings">open settings</button>
-            </div>
-
-            <div class="neck">
-                <h4>Users</h4>
-                <!-- <input type="text" id="user-filter-input" placeholder="Search..."> -->
-            </div>
-
-            <div class="body" id="users-container">
-
-            </div>
-        </aside>
-
-        <main class="active">
-            <div class="header">
-                <button id="open-sidebar" title="open sidebar">[ - ]</button>
-                <small></small>
-                <p><small id="from-user-text">FROM</small> <span>></span> <small id="to-user-text">TO</small></p>
-            </div>
-
-            <div class="message-container">
-
-            </div>
-
-            <form id="chat-form">
-                <button id="upload-file" title="Upload" type="button">^</button>
-                <input type="text" placeholder="message..." name="text" required autocomplete="off">
-                <button title="send">></button>
-            </form>
-        </main>
-    </section>
-
-    <section class="settings-container">
-        <div class="content">
-            <button id="close-settings" title="close-settings">[ X ]</button>
-
+    <div class="container">
+        <div class="sidebar">
+            <button type="button" class="f-button" id="close-sidebar" title="open sidebar">[x]</button>
             <form id="user-form">
-                <h2>Manage Users</h2>
-                <select name="userAction">
+                <h4>Manage Users</h4>
+                <select class="input" name="userAction">
                     <option value="USER_STATUS">USER_STATUS</option>
                     <option value="ADD_USER">ADD_USER</option>
                     <option value="BLOCK_USER">BLOCK/UNBLOCK_USER</option>
@@ -80,20 +34,58 @@
                     <option value="DOWNLOAD_MESSAGES">DOWNLOAD_MESSAGES</option>
                 </select>
 
-                <input type="text" list="users-datalist" placeholder="userAddress" name="userAddress" autocomplete="off"
-                    required>
-                <datalist id="users-datalist"></datalist>
-                <button type="submit">Submit</button>
+                <input class="input" type="text" list="users-datalist" placeholder="userAddress" name="userAddress"
+                    autocomplete="off" required>
+                <datalist id="users-datalist">
+
+                </datalist>
+                <button class="button" type="submit">Run</button>
+                <button class="button" id="close-access" type="button">Close access</button>
+                <h4>USERS</h4>
             </form>
 
+            <div class="users" id="users-container"></div>
         </div>
-    </section>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.8/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+        <div class="message-container">
+            <div class="header">
+                <button class="f-button" id="open-sidebar" title="open sidebar">[-]</button>
+                <small></small>
+                <p>
+                    <small id="from-user-text"></small>
+                    <span>&gt;</span>
+                    <small id="to-user-text">TO</small>
+                </p>
+            </div>
+
+            <div class="message-content">
+            </div>
+
+            <form id="chat-form">
+                <button class="button" id="upload-file" title="Upload" type="button">^</button>
+                <textarea class="input" id="message-input" placeholder="message..." name="text"
+                    autocomplete="off"></textarea>
+                <button type="button" class="button" id="message-btn" title="send">&gt;</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="logger">
+        <div class="logo">
+            <img src="./src/icon.png" alt="logo">
+        </div>
+
+        <div class="content" id="logger-content">
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.4/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.9/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js"></script>
-    <script src="/js/encryptor.js"></script>
-    <script src="/js/client.js"></script>
+    <script src="./js/aes-browser.js"></script>
+    <script src="./js/client.js"></script>
 </body>
 
 </html>

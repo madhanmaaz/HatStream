@@ -1,17 +1,23 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
 
 :root {
     --primary: #a78bfa;
+    --secondary: #2a1454;
+    --typing: #ff9f1c;
+    --typing: #00ff46;
+
     --bg1: #06080d;
     --bg2: #0f0715;
+    --text: #e5e5e5;
+    --border: 2px solid rgba(229, 229, 229, 0.1);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
     background: none;
+    font-family: "JetBrains Mono", serif !important;
     outline: none;
     border: 0;
     text-decoration: none;
@@ -25,4 +31,49 @@
 ::-webkit-scrollbar-thumb {
     background: rgba(229, 229, 229, 0.2);
     border-radius: 2px;
+}
+
+body {
+    background: var(--bg1);
+    color: var(--text);
+}
+
+.input {
+    font-size: 1.1rem;
+    padding: .5rem;
+    border-radius: 4px;
+    background: rgba(70, 70, 70, 0.05);
+    backdrop-filter: blur(15px);
+    border: var(--border);
+    color: var(--text);
+}
+
+select option {
+    background: #000;
+}
+
+.input:focus {
+    border-color: var(--primary);
+}
+
+.button {
+    background: var(--primary);
+    font-size: 1.1rem;
+    padding: .4rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.f-button {
+    font-size: 1.1rem;
+    cursor: pointer;
+    color: var(--text);
+}
+
+a {
+    color: aquamarine;
+}
+
+.p {
+    color: #b1a7a6;
 }

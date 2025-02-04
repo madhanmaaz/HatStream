@@ -1,8 +1,7 @@
 const crypto = require("crypto")
-const { rsaCollection } = require("./database")
+const { rsaObject } = require("./database")
 
-let KEYS = rsaCollection.find({ key: "RSA" })
-if (!KEYS) {
+if (rsaObject.get("publicKey") == null || rsaObject.get("privateKey")) {
     const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", {
         modulusLength: 2048,
         publicKeyEncoding: {
@@ -15,8 +14,8 @@ if (!KEYS) {
         },
     })
 
-    KEYS = { key: "RSA", pubKey: publicKey, priKey: privateKey }
-    rsaCollection.insert(KEYS)
+    rsaObject.set("publicKey", publicKey)
+    rsaObject.set("privateKey", privateKey)
 }
 
 function encrypt(data, publicKey) {
@@ -43,6 +42,5 @@ function decrypt(data, privateKey) {
 
 module.exports = {
     encrypt,
-    decrypt,
-    KEYS
+    decrypt
 }

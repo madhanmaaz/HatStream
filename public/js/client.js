@@ -1,7 +1,7 @@
-console.log("HATSTREM - secure chatapp")
-document.addEventListener("contextmenu", function (event) {
-    event.preventDefault()
-})
+console.log("HATSTREM - chat")
+// document.addEventListener("contextmenu", function (event) {
+//     event.preventDefault()
+// })
 
 document.addEventListener("keydown", (e) => {
     const forbiddenKeys = ["F12", "I", "J", "U"]
@@ -11,18 +11,19 @@ document.addEventListener("keydown", (e) => {
 })
 
 const authForm = document.querySelector("#auth-form")
-const rootApp = document.querySelector("#root")
+const mainContainer = document.querySelector(".container")
 const sidebarContainer = document.querySelector(".sidebar")
-const mainContainer = rootApp.querySelector("main")
-const settingsContainer = document.querySelector(".settings-container")
 const userForm = document.querySelector("#user-form")
 const usersDatalist = document.querySelector("#users-datalist")
 const usersContainer = document.querySelector("#users-container")
-const messageContainer = document.querySelector(".message-container")
 const fromUserText = document.querySelector("#from-user-text")
 const toUserText = document.querySelector("#to-user-text")
+const messageContainer = document.querySelector(".message-content")
 const chatForm = document.querySelector("#chat-form")
+const messageInput = document.querySelector("#message-input")
+const messageBtn = document.querySelector("#message-btn")
 const uploadFile = document.querySelector("#upload-file")
+const loggerContent = document.querySelector("#logger-content")
 
 document.querySelector("#close-access").addEventListener("click", () => {
     location.reload()
@@ -30,45 +31,11 @@ document.querySelector("#close-access").addEventListener("click", () => {
 
 document.querySelector("#open-sidebar").addEventListener("click", () => {
     sidebarContainer.classList.add("active")
-    mainContainer.classList.remove("active")
 })
 
 document.querySelector("#close-sidebar").addEventListener("click", () => {
     sidebarContainer.classList.remove("active")
-    mainContainer.classList.add("active")
 })
-
-document.querySelector("#open-settings").addEventListener("click", () => {
-    settingsContainer.classList.add("active")
-    rootApp.classList.remove("active")
-})
-
-document.querySelector("#close-settings").addEventListener("click", () => {
-    settingsContainer.classList.remove("active")
-    rootApp.classList.add("active")
-})
-
-fromUserText.innerText = location.origin
-
-const STATE = {
-    PHRASE_1: null,
-    PHRASE_2: null,
-    reset() {
-        this.PHRASE_1 = null
-        this.PHRASE_2 = null
-    },
-    isAuthenticated() {
-        return this.PHRASE_1 && this.PHRASE_2
-    }
-}
-
-const fileMaxSize = 10 * 1024 * 1024
-const APP_DATA = {
-    users: {},
-    messages: {},
-    currentUser: null,
-    atBottom: null
-}
 
 function escapeHTML(str) {
     if (str == null) return ""
@@ -93,40 +60,79 @@ function getCurrentTime() {
     return `${hours}:${minutes}:${seconds}`
 }
 
+function typingText(element, data, sElement) {
+    let count = 0
+    const interval_ = setInterval(() => {
+        const span = document.createElement("span")
+        span.classList.add("char")
+        span.innerText = data[count]
+        element.append(span)
+
+        count++
+        if (count === data.length) {
+            clearInterval(interval_)
+        }
+
+        if (sElement) {
+            sElement.scrollTop = sElement.scrollHeight
+        }
+    }, 20)
+}
+
+function addLog(data) {
+    const p = document.createElement("p")
+    p.title = getCurrentTime()
+    loggerContent.appendChild(p)
+    typingText(p, data, loggerContent)
+}
+
+// app
+const STATE = {
+    PHRASE_1: null,
+    PHRASE_2: null,
+    resetPhrase() {
+        this.PHRASE_1 = null
+        this.PHRASE_2 = null
+    },
+    users: {},
+    messages: {},
+    currentUser: null,
+    atBottom: null,
+    fileMaxSize: 10 * 1024 * 1024
+}
+
+fromUserText.innerText = location.origin
+addLog("> Enter access phrase values.")
+
 async function sendSecureRequest(jsonData) {
     try {
-        const encrypted = ENCRYPTOR.encrypt(JSON.stringify(jsonData), STATE.PHRASE_2)
-        const response = await axios.post("/api/client", {
-            data: encrypted
-        }, {
-            headers: {
-                "Content-Type": "application/json"
-            }
+        const encryptedBinary = AES.encrypt(jsonData, STATE.PHRASE_2)
+        const file = new Blob([encryptedBinary], { type: 'application/octet-stream' })
+        const formData = new FormData()
+        formData.append('enc', file, 'enc.bin')
+
+        const response = await axios.post("/api/client", formData, {
+            responseType: "arraybuffer"
         })
 
         if (response.status !== 200) {
-            return alert("Request failed: Access Denied.")
+            return addLog("> Request failed: Access Denied.")
         }
 
-        const responseData = response.data
-        if (responseData.hasOwnProperty("$error")) {
-            return alert(responseData.$error)
-        }
-
-        const decrypted = ENCRYPTOR.decrypt(responseData.data, STATE.PHRASE_1)
+        const encryptedResponse = new Uint8Array(response.data)
+        const decrypted = AES.decrypt(encryptedResponse, STATE.PHRASE_1)
         if (!decrypted) {
-            return alert("Incorrect phrase values.")
+            return addLog("> Incorrect phrase values.")
         }
 
-        const decryptedData = JSON.parse(decrypted)
-        if (decryptedData.hasOwnProperty("$error")) {
-            return alert(decryptedData.$error)
+        if (decrypted.hasOwnProperty("error")) {
+            return addLog(`> ${decrypted.error}`)
         }
 
-        return decryptedData
+        return decrypted
     } catch (error) {
         console.log(error)
-        return alert(`Request failed: ${error.message}`)
+        addLog(`> Error: ${error.message}`)
     }
 }
 
@@ -138,7 +144,7 @@ authForm.addEventListener("submit", async function (e) {
         const phrase1 = e.target.p1.value.trim()
         const phrase2 = e.target.p2.value.trim()
 
-        if (!phrase1 || !phrase2) return alert("Invalid phrase values.")
+        if (!phrase1 || !phrase2) return addLog("> Invalid phrase values.")
         STATE.PHRASE_1 = phrase1
         STATE.PHRASE_2 = phrase2
 
@@ -148,12 +154,9 @@ authForm.addEventListener("submit", async function (e) {
         })
 
         if (!response) return
-        if (response.data !== "OK") {
-            return alert("Access denied.")
-        }
-
+        addLog("> Access granted.")
         authForm.classList.remove("active")
-        rootApp.classList.add("active")
+        mainContainer.classList.add("active")
 
         const socket = io("", {
             transports: ["websocket"],
@@ -161,34 +164,34 @@ authForm.addEventListener("submit", async function (e) {
         })
 
         socket.on("data", async response => {
-            if (response.hasOwnProperty("$error")) {
-                return alert(response.$error)
+            if (response.hasOwnProperty("error")) {
+                return addLog(`> ${response.error}`)
             }
 
             try {
-                const decrypted = ENCRYPTOR.decrypt(response.data, STATE.PHRASE_1)
-                const data = JSON.parse(decrypted)
-                await handleSocketActions(data)
+                const decrypted = AES.decrypt(response.data, STATE.PHRASE_1)
+                await handleSocketActions(decrypted)
             } catch (error) {
                 console.log(error)
-                alert("socket failed.")
+                addLog(`> Socket error: ${error.message}`)
             }
         })
 
         const fetchUsers = await sendSecureRequest({ action: "GET_USERS" })
         if (!fetchUsers) return
-        APP_DATA.users = fetchUsers.data.map(userObj => {
+
+        STATE.users = fetchUsers.data.map(userObj => {
             return userObj.userAddress
         })
 
-        APP_DATA.users.forEach(userAddress => {
+        STATE.users.forEach(userAddress => {
             TEMPLATES.addUserDataList(userAddress)
             TEMPLATES.user(userAddress)
         })
     } catch (error) {
-        STATE.reset()
         console.log(error)
-        alert(`Failed to access. ${error.message}`)
+        STATE.reset()
+        addLog(`> Failed to access: ${error.message}`)
     }
 })
 
@@ -202,13 +205,13 @@ userForm.addEventListener("submit", async (e) => {
     try {
         const parsedAddress = new URL(userAddress)
         if (location.origin === parsedAddress.origin) {
-            return alert("Error: Same server URL.")
+            return addLog("> Error: Same server URL.")
         }
 
         userAddress = parsedAddress.origin
     } catch (error) {
         console.log(error)
-        return alert("Error: Invalid URL")
+        return addLog("> Error: Invalid URL")
     }
 
     e.submitter.setAttribute("disabled", true)
@@ -222,6 +225,8 @@ userForm.addEventListener("submit", async (e) => {
     if (!response) return
 
     if (action == "DOWNLOAD_MESSAGES") {
+        if (response.data.length == 0) return addLog("> 0 messages.")
+
         const jsonData = JSON.stringify(response.data, null, 2)
         const blob = new Blob([jsonData], { type: "application/json" })
         const url = URL.createObjectURL(blob)
@@ -237,28 +242,30 @@ userForm.addEventListener("submit", async (e) => {
         return
     }
 
-    alert(response.data)
+    addLog(`> ${response.data}`)
     if (action == "ADD_USER") {
         TEMPLATES.user(userAddress)
     } else if (action == "CLEAR_MESSAGES") {
-        APP_DATA.messages[userAddress] = []
-        if (APP_DATA.currentUser == userAddress) {
+        STATE.messages[userAddress] = []
+        if (STATE.currentUser == userAddress) {
             messageContainer.innerHTML = ""
         }
     }
 })
 
 // chatForm
-chatForm.addEventListener("submit", async (e) => {
-    e.preventDefault()
-    if (!APP_DATA.currentUser) return
+async function sendChat() {
+    if (!STATE.currentUser) return
 
     try {
-        e.submitter.setAttribute("disabled", true)
-        e.target.text.setAttribute("readonly", true)
+        const text = messageInput.value.trim()
+        if (!text) {
+            messageInput.focus()
+            return
+        }
+        messageBtn.setAttribute("disabled", true)
+        messageInput.setAttribute("readonly", true)
 
-        const text = escapeHTML(e.target.text.value)
-        if (!text) return
         const time = getCurrentTime()
         const type = "text"
 
@@ -267,31 +274,38 @@ chatForm.addEventListener("submit", async (e) => {
             type,
             time,
             data: text,
-            userAddress: APP_DATA.currentUser,
+            userAddress: STATE.currentUser,
             thisUserAddress: location.origin
         })
 
-        e.submitter.removeAttribute("disabled")
-        e.target.text.removeAttribute("readonly")
+        messageBtn.removeAttribute("disabled")
+        messageInput.removeAttribute("readonly")
 
         if (!response) return
         TEMPLATES.messageLine({
             type,
             time,
             data: text,
-            userAddress: APP_DATA.currentUser
+            userAddress: STATE.currentUser
         })
 
-        e.target.text.value = ""
         messageContainer.scrollTop = messageContainer.scrollHeight
+        messageInput.value = ""
     } catch (error) {
         console.log(error)
-        alert(`Failed to send message. ${error.message}`)
+        addLog(`> Failed to send message: ${error.message}`)
+    }
+}
+
+messageBtn.addEventListener("click", sendChat)
+messageInput.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter" && e.ctrlKey) {
+        await sendChat()
     }
 })
 
 uploadFile.addEventListener("click", () => {
-    if (!APP_DATA.currentUser) return
+    if (!STATE.currentUser) return
 
     const input = document.createElement("input")
     input.type = "file"
@@ -302,19 +316,16 @@ uploadFile.addEventListener("click", () => {
 
         const file = e.target.files[0]
         if (!file) {
-            alert("No file selected.")
-            return
+            return addLog("> No file selected.")
         }
 
-        if (file.size > fileMaxSize) {
-            alert("Error: File size exceeds 10MB limit.")
-            return
+        if (file.size > STATE.fileMaxSize) {
+            return addLog("> Error: File size exceeds 10MB limit.")
         }
 
         const reader = new FileReader()
-
         reader.onload = async (event) => {
-            const filename = escapeHTML(file.name)
+            const filename = file.name
             const type = "binary"
             const time = getCurrentTime()
             const data = event.target.result
@@ -326,7 +337,7 @@ uploadFile.addEventListener("click", () => {
                 data,
                 filename,
                 ftype: file.type,
-                userAddress: APP_DATA.currentUser,
+                userAddress: STATE.currentUser,
                 thisUserAddress: location.origin
             })
 
@@ -337,14 +348,14 @@ uploadFile.addEventListener("click", () => {
                 data,
                 filename,
                 ftype: file.type,
-                userAddress: APP_DATA.currentUser
+                userAddress: STATE.currentUser
             })
 
             messageContainer.scrollTop = messageContainer.scrollHeight
         }
 
         reader.onerror = () => {
-            alert("Failed to readfile.")
+            addLog("> Failed to readfile.")
         }
 
         reader.readAsDataURL(file)
@@ -370,7 +381,7 @@ const TEMPLATES = {
                 mainContainer.classList.add("active")
             }
 
-            APP_DATA.currentUser = userAddress
+            STATE.currentUser = userAddress
             chatForm.classList.add("active")
 
             usersContainer.querySelectorAll(".user").forEach(user => {
@@ -380,7 +391,7 @@ const TEMPLATES = {
             toUserText.innerText = userAddress
             messageContainer.innerHTML = ""
 
-            if (APP_DATA.messages[userAddress] == null) {
+            if (STATE.messages[userAddress] == null) {
                 const response = await sendSecureRequest({
                     action: "DOWNLOAD_MESSAGES",
                     userAddress,
@@ -388,33 +399,36 @@ const TEMPLATES = {
                 })
 
                 if (response.hasOwnProperty("error")) {
-                    return alert(response.error)
+                    return addLog(`> ${response.error}`)
                 }
 
-                APP_DATA.messages[userAddress] = response.data
+                STATE.messages[userAddress] = response.data
             }
 
-            for (const messageObj of APP_DATA.messages[userAddress]) {
+            for (const messageObj of STATE.messages[userAddress]) {
                 TEMPLATES.messageLine(messageObj)
             }
 
             messageContainer.scrollTop = messageContainer.scrollHeight
         })
     },
-    messageLine({ type, time, data, userAddress, ftype, remote, filename }) {
+    messageLine(messageObj, typingAnimation) {
+        const { type, time, data, userAddress, ftype, remote, filename } = messageObj
         const messageText = type == "text"
-            ? data
+            ? (typingAnimation ? data : escapeHTML(data))
             : createUiForFile(filename, ftype, data)
 
         const div = document.createElement("div")
-        div.className = "line"
+        div.classList.add("line")
+        remote ? div.classList.add("remote") : null
         div.innerHTML = `
         <div class="head">
-            <b>${remote ? "&gt;" : "&lt;"}</b>
+            <span class="indicator">${remote ? "&gt;" : "&lt;"}</span>
+            <span class="username">${remote ? "REMOTE" : "YOU"}</span>
+            <b></b>
             <span class="time">${time}</span>
-            <span class="${remote ? 'remote' : ''}">&#183; ${remote ? "REMOTE" : "YOU"}</span>
         </div>
-        <pre>${messageText}</pre>`
+        <pre class="message-text">${typingAnimation ? "" : messageText}</pre>`
 
         const file = div.querySelector(".file")
         if (file) {
@@ -429,18 +443,27 @@ const TEMPLATES = {
         }
 
         messageContainer.appendChild(div)
+
+        // adding typing
+        if (typingAnimation) {
+            typingText(
+                div.querySelector(".message-text"),
+                messageText,
+                messageContainer
+            )
+        }
     }
 }
 
 messageContainer.addEventListener("scroll", () => {
-    APP_DATA.atBottom = (messageContainer.scrollTop + messageContainer.clientHeight
+    STATE.atBottom = (messageContainer.scrollTop + messageContainer.clientHeight
         >= messageContainer.scrollHeight - 5)
 })
 
 async function handleSocketActions(options) {
     switch (options.action) {
         case "MESSAGE": {
-            if (APP_DATA.messages[options.userAddress] == null) {
+            if (STATE.messages[options.userAddress] == null) {
                 const response = await sendSecureRequest({
                     action: "DOWNLOAD_MESSAGES",
                     userAddress: options.userAddress,
@@ -448,20 +471,22 @@ async function handleSocketActions(options) {
                 })
 
                 if (response.hasOwnProperty("error")) {
-                    return alert(response.error)
+                    return addLog(`> ${response.error}`)
                 }
 
-                APP_DATA.messages[options.userAddress] = response.data
+                STATE.messages[options.userAddress] = response.data
             } else {
-                APP_DATA.messages[options.userAddress].push(options)
+                STATE.messages[options.userAddress].push(options)
             }
 
-            if (APP_DATA.currentUser == options.userAddress) {
-                TEMPLATES.messageLine(options)
+            if (STATE.currentUser == options.userAddress) {
+                TEMPLATES.messageLine(options, options.type == "text")
 
-                if (APP_DATA.atBottom) {
+                if (STATE.atBottom) {
                     messageContainer.scrollTop = messageContainer.scrollHeight
                 }
+            } else {
+                addLog(`> msg: ${options.userAddress}`)
             }
 
             break
@@ -470,6 +495,7 @@ async function handleSocketActions(options) {
         case "ADD_USER": {
             TEMPLATES.addUserDataList(options.userAddress)
             TEMPLATES.user(options.userAddress)
+            addLog(`> New user added to your server: ${options.userAddress}`)
             break
         }
     }
@@ -478,7 +504,7 @@ async function handleSocketActions(options) {
 function createUiForFile(filename, type, data) {
     if (!type || !data) return ""
 
-    let html = `<button title="Click to download" class="file">DOWNLOAD FILE: ${filename}</button>`
+    let html = `<button title="Click to download" class="file">DOWNLOAD FILE: ${escapeHTML(filename)}</button>`
     if (type.startsWith("image")) {
         html += `<img src="${data}" alt="Image">`
     } else if (type.startsWith("audio")) {

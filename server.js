@@ -4,6 +4,7 @@ const socketIO = require("socket.io")
 const express = require("express")
 const http = require("http")
 const path = require("path")
+const fileupload = require("express-fileupload")
 
 const helpers = require("./utils/helpers")
 
@@ -14,7 +15,8 @@ const io = new socketIO.Server(server)
 app.set('trust proxy', 1)
 app.use(express.static(path.join(__dirname, "public")))
 app.use(express.urlencoded({ extended: false }))
-app.use(express.json({ limit: "20mb" }))
+app.use(express.json())
+app.use(fileupload())
 
 global.IO = io
 
