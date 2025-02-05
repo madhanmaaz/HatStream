@@ -116,7 +116,7 @@ async function handleActions(options) {
 
                 usersCollection.update({ userAddress }, { blocked: !user.blocked })
                 return {
-                    data: !user.blocked ? "User blocked." : "User unblocked."
+                    data: user.blocked ? "User blocked." : "User unblocked."
                 }
             } catch (error) {
                 console.log(error)
