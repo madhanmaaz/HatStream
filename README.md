@@ -1,6 +1,8 @@
 # HatStream for Hackers - Secure Decentralized Chat App
 
-- HatStream is a fully decentralized, server-to-server chat application with end-to-end encryption using AES. there is no central server.
+<p align=center>
+  HatStream is a decentralized chat application designed for ultimate privacy and security. Utilizing AES and RSA encryption, it ensures end-to-end protection, making data transmission unreadable over HTTP and also completely unreadable by ISPs. HatStream enables direct server-to-server (S2S) data transmission. With a web-based UI, users can securely access their chats from any device without needing a VPN.
+</p>
 
 <p align=center>
 <img src="./public/favicon.ico">
@@ -15,11 +17,13 @@ https://github.com/user-attachments/assets/7397523d-6908-42d7-9513-3e103d3410ba
 ![screen](./scr/2.jpg)
 
 ### 🚀  Features
-- **Server-to-Server Communication**: No central server; each user hosts their own chat server.
-
-- **AES Encryption**: Messages are encrypted before transmission, preventing interception.
-
-- **Decentralized Discovery**: Users communicate using shared server URLs.
+- **Decentralized**  
+- **AES & RSA encryption**  
+- **Invisible to ISPs & HTTP capture**  
+- **Server-to-Server (S2S) transmission**  
+- **Web-based UI**  
+- **No VPN required**  
+- **CLI support**: [HatStream CLI GitHub](https://github.com/madhanmaaz/HatStream-cli)
 
 ### 🔧 How It Works
 - **Host Your Own HatStream Server**: Each user runs a server instance.
