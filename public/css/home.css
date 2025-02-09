@@ -45,7 +45,7 @@ body {
 
 /* container */
 .container {
-    flex: 3;
+    width: calc(100% - 370px);
     height: 100%;
     position: relative;
     display: none;
@@ -110,7 +110,7 @@ body {
 .message-container {
     display: flex;
     flex-direction: column;
-    width: 100%;
+    width: calc(100% - 250px);
     height: 100%;
 }
 

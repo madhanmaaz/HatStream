@@ -311,7 +311,7 @@ router.post("/s2s/message", helpers.messageLimiter, (req, res) => {
         messageCollection.insert(decrypted)
         helpers.sendSecureSocket("MESSAGE", decrypted)
 
-        return res.json({ data: "message received." })
+        return res.json({ data: "OK" })
     } catch (error) {
         console.log(error)
         res.json({ error: `Failed to communicate to remote server.` })
