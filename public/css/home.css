@@ -300,6 +300,11 @@ body {
 
     .container {
         height: 70%;
+        width: 100%;
+    }
+
+    .message-container {
+        width: 100%;
     }
 
     .logger {

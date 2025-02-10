@@ -328,7 +328,7 @@ uploadFile.addEventListener("click", () => {
             const filename = file.name
             const type = "binary"
             const time = getCurrentTime()
-            const data = event.target.result
+            const data = arrayBufferToBase64(event.target.result)
 
             const response = await sendSecureRequest({
                 action: "MESSAGE_TO_REMOTE",
@@ -358,9 +358,19 @@ uploadFile.addEventListener("click", () => {
             addLog("> Failed to readfile.")
         }
 
-        reader.readAsDataURL(file)
+        reader.readAsArrayBuffer(file)
     })
 })
+
+function arrayBufferToBase64(buffer) {
+    let binary = ''
+    const bytes = new Uint8Array(buffer)
+    const len = bytes.byteLength
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i])
+    }
+    return window.btoa(binary)
+}
 
 const TEMPLATES = {
     addUserDataList(userAddress) {
@@ -506,11 +516,11 @@ function createUiForFile(filename, type, data) {
 
     let html = `<button title="Click to download" class="file">DOWNLOAD FILE: ${escapeHTML(filename)}</button>`
     if (type.startsWith("image")) {
-        html += `<img src="${data}" alt="Image">`
+        html += `<img src="data:${type};base64,${data}" alt="Image">`
     } else if (type.startsWith("audio")) {
-        html += `<audio controls><source src="${data}" type="${type}">Your browser does not support the audio element.</audio>`
+        html += `<audio controls><source src="data:${type};base64,${data}" type="${type}">Your browser does not support the audio element.</audio>`
     } else if (type.startsWith("video")) {
-        html += `<video controls><source src="${data}" type="${type}">Your browser does not support the video tag.</video>`
+        html += `<video controls><source src="data:${type};base64,${data}" type="${type}">Your browser does not support the video tag.</video>`
     }
 
     return html
