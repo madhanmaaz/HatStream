@@ -253,7 +253,7 @@ body {
 }
 
 .logger .content p {
-    font-size: 1.1rem;
+    font-size: .9rem;
     word-wrap: break-word;
     overflow-wrap: break-word;
     border-bottom: var(--border);
@@ -310,6 +310,7 @@ body {
     .logger {
         width: 100%;
         height: 30%;
+        padding: .4rem;
     }
 
     .sidebar {
@@ -339,5 +340,9 @@ body {
 
     .message-container .header button {
         display: block;
+    }
+
+    .logger .content p {
+        padding: .1rem;
     }
 }
