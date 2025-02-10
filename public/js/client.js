@@ -444,7 +444,7 @@ const TEMPLATES = {
         if (file) {
             file.addEventListener("click", () => {
                 const link = document.createElement("a")
-                link.href = data
+                link.href = `data:${ftype};base64,${data}`
                 link.download = filename
                 document.body.appendChild(link)
                 link.click()
